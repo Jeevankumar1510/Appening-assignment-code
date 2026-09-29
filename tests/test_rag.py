@@ -53,3 +53,11 @@ def test_homepage_renders_chat_interface():
     assert "text/html" in response.headers["content-type"]
     assert "Agentic AI" in response.text
     assert "fetch('/ask'" in response.text
+
+
+def test_favicon_is_served():
+    response = client.get("/favicon.ico")
+
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith("image/svg+xml")
+    assert "<svg" in response.text
