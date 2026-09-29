@@ -1,0 +1,419 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f5ef">
+  <title>Agentic AI Reader</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --paper: #f5f5ef;
+      --surface: #fffefa;
+      --ink: #202923;
+      --muted: #68736b;
+      --line: #dce1d9;
+      --forest: #244f3d;
+      --forest-dark: #193a2d;
+      --mint: #dce9d5;
+      --citrus: #e3edb5;
+      --coral: #bd684f;
+      --shadow: 0 16px 44px rgba(39, 57, 45, .08);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      min-height: 100vh;
+      color: var(--ink);
+      background-color: var(--paper);
+      background-image: radial-gradient(rgba(36, 79, 61, .09) .7px, transparent .7px);
+      background-size: 18px 18px;
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+    }
+
+    button, textarea { font: inherit; }
+
+    .app-shell {
+      display: grid;
+      grid-template-columns: 272px minmax(0, 1fr);
+      width: min(1280px, 100%);
+      min-height: 100vh;
+      margin: 0 auto;
+      background: rgba(255, 254, 250, .78);
+      box-shadow: var(--shadow);
+    }
+
+    .rail {
+      display: flex;
+      flex-direction: column;
+      gap: 34px;
+      padding: 30px 22px;
+      border-right: 1px solid var(--line);
+      background: rgba(249, 250, 244, .86);
+    }
+
+    .brand { display: flex; align-items: center; gap: 12px; }
+
+    .brand-mark {
+      display: grid;
+      width: 38px;
+      height: 38px;
+      place-items: center;
+      border-radius: 11px 11px 11px 3px;
+      color: var(--surface);
+      background: var(--forest);
+      font-family: Georgia, serif;
+      font-size: 21px;
+    }
+
+    .brand-name { font-size: 14px; font-weight: 700; }
+    .brand-caption { margin-top: 3px; color: var(--muted); font-size: 11px; }
+
+    .rail-label, .eyebrow {
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .book-title {
+      margin: 10px 0 7px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 20px;
+      font-weight: 400;
+      line-height: 1.22;
+    }
+
+    .book-author { color: var(--muted); font-size: 12px; line-height: 1.6; }
+
+    .source-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 18px;
+      color: var(--forest);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #628c4b;
+      box-shadow: 0 0 0 3px #e5eedc;
+    }
+
+    .rail-note {
+      margin-top: auto;
+      padding-top: 16px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.6;
+    }
+
+    .workspace { display: flex; min-width: 0; flex-direction: column; }
+
+    .topbar {
+      display: flex;
+      min-height: 72px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 16px 34px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .topbar-title { font-size: 13px; font-weight: 700; }
+
+    .connection {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 11px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--muted);
+      background: var(--surface);
+      font-size: 11px;
+      white-space: nowrap;
+    }
+
+    .main-content {
+      display: flex;
+      width: min(810px, 100%);
+      flex: 1;
+      flex-direction: column;
+      align-self: center;
+      padding: 48px 30px 28px;
+    }
+
+    .welcome { margin-bottom: 28px; animation: rise-in .45s ease-out both; }
+
+    h1 {
+      margin: 9px 0 10px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(30px, 4vw, 43px);
+      font-weight: 400;
+      line-height: 1.12;
+    }
+
+    .welcome p { max-width: 560px; margin: 0; color: var(--muted); font-size: 14px; line-height: 1.65; }
+
+    .suggestions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 19px; }
+
+    .suggestion {
+      padding: 9px 12px;
+      border: 1px solid #d6ded3;
+      border-radius: 999px;
+      color: #354a3b;
+      background: #fbfcf7;
+      cursor: pointer;
+      font-size: 11px;
+      transition: background .16s ease, border-color .16s ease, transform .16s ease;
+    }
+
+    .suggestion:hover { transform: translateY(-1px); border-color: #9bb09b; background: var(--mint); }
+
+    .thread { display: flex; flex: 1; flex-direction: column; gap: 20px; padding: 8px 0 20px; }
+
+    .message { display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 11px; animation: rise-in .28s ease-out both; }
+
+    .avatar {
+      display: grid;
+      width: 30px;
+      height: 30px;
+      place-items: center;
+      border-radius: 9px;
+      color: var(--forest);
+      background: var(--mint);
+      font-family: Georgia, serif;
+      font-size: 14px;
+    }
+
+    .message-body { min-width: 0; padding-top: 2px; }
+    .message-label { margin-bottom: 6px; color: var(--muted); font-size: 10px; font-weight: 700; }
+    .message-text { color: #29332d; font-size: 14px; line-height: 1.7; overflow-wrap: anywhere; }
+    .message.user { grid-template-columns: minmax(0, 1fr) 30px; }
+    .message.user .avatar { grid-column: 2; color: #fff; background: var(--coral); font-family: inherit; font-size: 11px; }
+    .message.user .message-body { grid-column: 1; grid-row: 1; justify-self: end; max-width: 86%; }
+    .message.user .message-text { padding: 11px 14px; border-radius: 14px 4px 14px 14px; color: white; background: var(--forest); }
+    .message.user .message-label { text-align: right; }
+
+    .answer-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 12px; }
+    .score { padding: 5px 8px; border-radius: 5px; color: #31563b; background: #e7efdf; font-size: 10px; font-weight: 700; }
+    details { margin-top: 12px; border-top: 1px solid var(--line); }
+    summary { padding: 10px 0 4px; color: var(--forest); cursor: pointer; font-size: 11px; font-weight: 700; }
+    .source-chunk { margin: 7px 0 0; padding: 10px 12px; border-left: 2px solid #8ba17e; color: var(--muted); background: #f6f8f2; font-size: 11px; line-height: 1.6; }
+
+    .composer-wrap { position: sticky; bottom: 0; padding-top: 14px; background: linear-gradient(transparent, var(--surface) 17%); }
+    .composer {
+      display: flex;
+      align-items: flex-end;
+      gap: 12px;
+      padding: 12px;
+      border: 1px solid #cdd7cc;
+      border-radius: 13px;
+      background: var(--surface);
+      box-shadow: 0 8px 24px rgba(38, 61, 44, .07);
+    }
+
+    .composer:focus-within { border-color: #688c70; box-shadow: 0 0 0 3px rgba(104, 140, 112, .12); }
+    textarea { width: 100%; min-height: 42px; max-height: 140px; resize: vertical; border: 0; outline: 0; color: var(--ink); background: transparent; font-size: 13px; line-height: 1.5; }
+    textarea::placeholder { color: #89928b; }
+    .send {
+      display: grid;
+      width: 38px;
+      height: 38px;
+      flex: 0 0 auto;
+      place-items: center;
+      border: 0;
+      border-radius: 9px;
+      color: white;
+      background: var(--forest);
+      cursor: pointer;
+      transition: background .15s ease, transform .15s ease;
+    }
+
+    .send:hover { transform: translateY(-1px); background: var(--forest-dark); }
+    .send:disabled { cursor: wait; opacity: .55; }
+    .send svg { width: 17px; height: 17px; }
+    .composer-hint { margin: 8px 3px 0; color: #858d86; font-size: 10px; }
+    .error-text { color: #a84432; }
+    .typing { color: var(--muted); font-size: 12px; }
+
+    @keyframes rise-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+    @media (max-width: 760px) {
+      .app-shell { grid-template-columns: 1fr; }
+      .rail { gap: 14px; padding: 13px 18px; border-right: 0; border-bottom: 1px solid var(--line); }
+      .rail .rail-label, .rail .book-author, .rail .rail-note { display: none; }
+      .rail .brand { display: none; }
+      .book-title { margin: 0; font-size: 15px; }
+      .source-status { margin-top: 6px; }
+      .topbar { min-height: 55px; padding: 11px 18px; }
+      .main-content { padding: 32px 18px 20px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="rail" aria-label="Document information">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">A</div>
+        <div>
+          <div class="brand-name">Fieldnotes</div>
+          <div class="brand-caption">Knowledge assistant</div>
+        </div>
+      </div>
+      <section>
+        <div class="rail-label">Current source</div>
+        <h2 class="book-title">Agentic AI<br>An Executive's Guide</h2>
+        <div class="book-author">Konverge AI and Emergence AI</div>
+        <div class="source-status"><span class="status-dot"></span> eBook indexed on first question</div>
+      </section>
+      <div class="rail-note">Answers are grounded in retrieved passages from the included eBook.</div>
+    </aside>
+
+    <main class="workspace">
+      <header class="topbar">
+        <div class="topbar-title">Ask the eBook</div>
+        <div class="connection"><span class="status-dot"></span> Reader ready</div>
+      </header>
+
+      <section class="main-content" aria-label="Question and answer">
+        <div class="welcome" id="welcome">
+          <div class="eyebrow">Agentic AI / Reader</div>
+          <h1>What would you like to know?</h1>
+          <p>Ask a question about the eBook. Answers include the passages used and a relevance score.</p>
+          <div class="suggestions" aria-label="Suggested questions">
+            <button class="suggestion" type="button" data-prompt="What is Agentic AI?">What is Agentic AI?</button>
+            <button class="suggestion" type="button" data-prompt="What are the main components of an agentic system?">System components</button>
+            <button class="suggestion" type="button" data-prompt="What challenges of Agentic AI does the ebook discuss?">Challenges</button>
+          </div>
+        </div>
+
+        <div class="thread" id="thread" aria-live="polite"></div>
+
+        <div class="composer-wrap">
+          <form class="composer" id="question-form">
+            <textarea id="query" rows="1" aria-label="Your question" placeholder="Ask a question about Agentic AI..." required></textarea>
+            <button class="send" id="send" type="submit" aria-label="Send question" title="Send question">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 12 20 4l-5 16-3-7-8-1Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="m12 13 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            </button>
+          </form>
+          <div class="composer-hint" id="status" role="status">Responses are limited to the included eBook.</div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const form = document.querySelector('#question-form');
+    const input = document.querySelector('#query');
+    const thread = document.querySelector('#thread');
+    const welcome = document.querySelector('#welcome');
+    const send = document.querySelector('#send');
+    const status = document.querySelector('#status');
+
+    function addMessage(role, text, payload) {
+      const message = document.createElement('article');
+      message.className = `message ${role}`;
+      const avatar = document.createElement('div');
+      avatar.className = 'avatar';
+      avatar.textContent = role === 'assistant' ? 'A' : 'You';
+      const body = document.createElement('div');
+      body.className = 'message-body';
+      const label = document.createElement('div');
+      label.className = 'message-label';
+      label.textContent = role === 'assistant' ? 'EBook assistant' : 'You';
+      const content = document.createElement('div');
+      content.className = 'message-text';
+      content.textContent = text;
+      body.append(label, content);
+
+      if (role === 'assistant' && payload) {
+        const meta = document.createElement('div');
+        meta.className = 'answer-meta';
+        const score = document.createElement('span');
+        score.className = 'score';
+        score.textContent = `Relevance ${Math.round(payload.confidence_score * 100)}%`;
+        meta.append(score);
+        body.append(meta);
+
+        if (payload.retrieved_context_chunks.length) {
+          const details = document.createElement('details');
+          const summary = document.createElement('summary');
+          summary.textContent = `View ${payload.retrieved_context_chunks.length} source passage${payload.retrieved_context_chunks.length === 1 ? '' : 's'}`;
+          details.append(summary);
+          for (const chunk of payload.retrieved_context_chunks) {
+            const source = document.createElement('blockquote');
+            source.className = 'source-chunk';
+            source.textContent = chunk;
+            details.append(source);
+          }
+          body.append(details);
+        }
+      }
+
+      message.append(avatar, body);
+      thread.append(message);
+      message.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      return content;
+    }
+
+    async function ask(question) {
+      const query = question.trim();
+      if (!query || send.disabled) return;
+      welcome.hidden = true;
+      addMessage('user', query);
+      input.value = '';
+      send.disabled = true;
+      status.textContent = 'Searching the eBook...';
+      const waiting = addMessage('assistant', 'Finding relevant passages...');
+      waiting.classList.add('typing');
+
+      try {
+        const response = await fetch('/ask', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query })
+        });
+        if (!response.ok) throw new Error(`Request failed (${response.status})`);
+        const payload = await response.json();
+        waiting.closest('.message').remove();
+        addMessage('assistant', payload.final_answer, payload);
+        status.textContent = payload.confidence_score === 0
+          ? 'No supporting passage found in the eBook.'
+          : 'Answer grounded in retrieved eBook passages.';
+      } catch (error) {
+        waiting.closest('.message').remove();
+        const errorContent = addMessage('assistant', error.message || 'Unable to reach the server. Please try again.');
+        errorContent.classList.add('error-text');
+        status.textContent = 'Could not reach the answer service.';
+      } finally {
+        send.disabled = false;
+        input.focus();
+      }
+    }
+
+    form.addEventListener('submit', event => {
+      event.preventDefault();
+      ask(input.value);
+    });
+
+    document.querySelectorAll('[data-prompt]').forEach(button => {
+      button.addEventListener('click', () => ask(button.dataset.prompt));
+    });
+  </script>
+</body>
+</html>
